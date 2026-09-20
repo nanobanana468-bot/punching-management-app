@@ -25,10 +25,14 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Check Flutter project
+        run: flutter analyze
+
       - name: Build APK
-        run: flutter build apk --release -t lib/app.dart
+        run: flutter build apk --release -t lib/app.dart -v
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v7
         with:
           name: punching-management-release-apk
