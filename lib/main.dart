@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const PunchingApp());
+  runApp(const PunchingManagementApp());
 }
 
-class PunchingApp extends StatelessWidget {
-  const PunchingApp({super.key});
+class PunchingManagementApp extends StatelessWidget {
+  const PunchingManagementApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class PunchingApp extends StatelessWidget {
           seedColor: Colors.indigo,
         ),
       ),
-      home: const EmployeePage(),
+      home: const DashboardPage(),
     );
   }
 }
@@ -35,6 +35,266 @@ class Employee {
   });
 }
 
+class AppData {
+  static final List<Employee> employees = [];
+  static int present = 0;
+  static double otHours = 0;
+  static double payment = 0;
+}
+
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  void refresh() {
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Punching Management',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          refresh();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Dashboard',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Employee Attendance & Payment',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: DashboardCard(
+                      icon: Icons.people,
+                      title: 'Employees',
+                      value: '${AppData.employees.length}',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DashboardCard(
+                      icon: Icons.check_circle,
+                      title: 'Present',
+                      value: '${AppData.present}',
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: DashboardCard(
+                      icon: Icons.access_time,
+                      title: 'OT Hours',
+                      value: '${AppData.otHours}',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DashboardCard(
+                      icon: Icons.payments,
+                      title: 'Payment',
+                      value: 'Rs ${AppData.payment.toStringAsFixed(0)}',
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 28),
+
+              const Text(
+                'Quick Actions',
+                style: TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              ActionButton(
+                icon: Icons.fingerprint,
+                title: 'Punch In',
+                onTap: () {
+                  setState(() {
+                    AppData.present++;
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Punch In recorded'),
+                    ),
+                  );
+                },
+              ),
+
+              ActionButton(
+                icon: Icons.logout,
+                title: 'Punch Out',
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Punch Out recorded'),
+                    ),
+                  );
+                },
+              ),
+
+              ActionButton(
+                icon: Icons.person_add,
+                title: 'Add Employee',
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const EmployeePage(),
+                    ),
+                  );
+                  refresh();
+                },
+              ),
+
+              ActionButton(
+                icon: Icons.people,
+                title: 'Employee List',
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const EmployeePage(),
+                    ),
+                  );
+                  refresh();
+                },
+              ),
+
+              ActionButton(
+                icon: Icons.receipt_long,
+                title: 'Payment & Reports',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ReportsPage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class DashboardCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+
+  const DashboardCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 30),
+            const SizedBox(height: 12),
+            Text(title),
+            const SizedBox(height: 5),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const ActionButton({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        leading: CircleAvatar(
+          child: Icon(icon),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          size: 18,
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
 class EmployeePage extends StatefulWidget {
   const EmployeePage({super.key});
 
@@ -43,8 +303,6 @@ class EmployeePage extends StatefulWidget {
 }
 
 class _EmployeePageState extends State<EmployeePage> {
-  final List<Employee> employees = [];
-
   void addEmployee() {
     final nameController = TextEditingController();
     final roleController = TextEditingController();
@@ -101,7 +359,7 @@ class _EmployeePageState extends State<EmployeePage> {
                 }
 
                 setState(() {
-                  employees.add(
+                  AppData.employees.add(
                     Employee(
                       name: nameController.text.trim(),
                       role: roleController.text.trim(),
@@ -122,7 +380,7 @@ class _EmployeePageState extends State<EmployeePage> {
 
   void deleteEmployee(int index) {
     setState(() {
-      employees.removeAt(index);
+      AppData.employees.removeAt(index);
     });
   }
 
@@ -141,7 +399,7 @@ class _EmployeePageState extends State<EmployeePage> {
         icon: const Icon(Icons.person_add),
         label: const Text('Add Employee'),
       ),
-      body: employees.isEmpty
+      body: AppData.employees.isEmpty
           ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -160,16 +418,16 @@ class _EmployeePageState extends State<EmployeePage> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Tap + Add Employee to get started',
+                    'Tap Add Employee to get started',
                   ),
                 ],
               ),
             )
           : ListView.builder(
               padding: const EdgeInsets.all(12),
-              itemCount: employees.length,
+              itemCount: AppData.employees.length,
               itemBuilder: (context, index) {
-                final employee = employees[index];
+                final employee = AppData.employees[index];
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -200,6 +458,49 @@ class _EmployeePageState extends State<EmployeePage> {
                 );
               },
             ),
+    );
+  }
+}
+
+class ReportsPage extends StatelessWidget {
+  const ReportsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Payment & Reports'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            DashboardCard(
+              icon: Icons.people,
+              title: 'Total Employees',
+              value: '${AppData.employees.length}',
+            ),
+            const SizedBox(height: 12),
+            DashboardCard(
+              icon: Icons.check_circle,
+              title: 'Present',
+              value: '${AppData.present}',
+            ),
+            const SizedBox(height: 12),
+            DashboardCard(
+              icon: Icons.access_time,
+              title: 'OT Hours',
+              value: '${AppData.otHours}',
+            ),
+            const SizedBox(height: 12),
+            DashboardCard(
+              icon: Icons.payments,
+              title: 'Total Payment',
+              value: 'Rs ${AppData.payment.toStringAsFixed(0)}',
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
